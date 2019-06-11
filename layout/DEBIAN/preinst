@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo Clearing previous installs
+rm -rf /Library/Exobar/StatusPro
+rm -rf /Library/Exobar/statusprofix

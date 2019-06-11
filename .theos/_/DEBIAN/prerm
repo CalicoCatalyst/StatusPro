@@ -1,0 +1,8 @@
+#!/bin/bash
+
+rm -rf /Library/Exobar/default
+mv /Library/Exobar/default_old /Library/Exobar/default
+mkdir StatusPro
+mkdir statusprofix
+
+exit 0

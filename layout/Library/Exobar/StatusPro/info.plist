@@ -1,0 +1,87 @@
+{
+	author = cat;
+	version = "1.4.4";
+	description = "Resigned status bar with music/weather/cell+wifi info available at a tap";
+	settings = (
+        {
+            cell = PSSwitchCell;
+            default = true;
+            label = "StatusPro hasn't loaded yet";
+            key = TSdefaultnothing;
+        },
+        {
+            cell = PSStaticTextCell;
+            label = "Hit this toggle if";
+        },
+		{
+			cell = PSSwitchCell;
+			default = true;
+			label = "Black Background Everywhere (OLED)";
+			key = TSdefaultblack;
+		},
+        {
+            cell = PSSwitchCell;
+            default = true;
+            label = "Invert Carrier On Light BG";
+            key = TSdefaultinvert;
+        },
+        {
+            cell = PSSwitchCell;
+            default = true;
+            label = "Show Day";
+            key = TSdefaultshowday;
+        },
+        {
+            cell = PSSwitchCell;
+            default = true;
+            label = "24 Hour Time";
+            key = TSdefaulttwentytime;
+        },
+        {
+            cell = PSSwitchCell;
+            default = false;
+            label = "Beta Style time-battery";
+            key = TSdefaultoldtime;
+        },
+        {
+            cell = PSGroupCell;
+            label = "OPTIONS";
+        },
+		{
+			cell = PSEditTextCell;
+			default = "11";
+			label = "Carrier Font Size:";
+			key = TSdefaultcarrierfont;
+		},
+		{
+			cell = PSEditTextCell;
+			default = "10";
+			label = "Font Size:";
+			key = TSdefaultfont;
+			keyboard="phone";
+		},
+        {
+            cell = PSGroupCell;
+            label = "FONT SIZES";
+        },
+        {
+              cell = PSGroupCell;
+              label = "NOTICE:";
+              footerText = "RESPRING AFTER APPLYING CHANGES";
+              footerAlignment = 0;
+        },
+        {
+            cell = PSEditTextCell;
+            default = icons/apple.png;
+            label = "Icon Location:";
+            key = TSdefaulticon;
+        },
+		{
+			cell = PSEditTextCell;
+			default = calico;
+			label = "Carrier Name:";
+			key = TSdefaultcarrier;
+		},
+
+	);
+}

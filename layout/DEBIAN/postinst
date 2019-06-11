@@ -1,0 +1,12 @@
+#!/bin/bash
+
+echo Removing default directory...
+rm -rf /Library/Exobar/default
+echo Recreating it...
+mkdir /Library/Exobar/default
+mv /Library/Exobar/StatusPro/* /Library/Exobar/default/
+rm -rf /Library/Exobar/StatusPro/
+cp -rf /Library/Exobar/statusprofix/ /Library/Exobar/StatusPro/
+rm -rf /Library/Exobar/statusprofix/
+
+exit 0

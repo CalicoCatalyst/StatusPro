@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<!-- ExoBar theme StatusPro by calicocat -->
+
+<!-- LICENSE: Pay for the theme, then do whatever the fuck you want with this code. no point in redoing something i've
+                already done when you can just copy/paste my code and get something awesome and new working.-->
+<!-- but please do pay for it if you're going to be making themes with it.  -->
+
+<!-- NOTE: If you're here just to get the tweak for free, GET IN CONTACT WITH ME. I have no problem gifting this tweak to you,
+           But the implementation is VERY sensitive at the moment. The compiled deb I distribute handles that entirely,
+           And if you dont use it, you are liable to completely break Exobar for your phone, indefinitely. There is no
+           known fix for this issue yet. -->
+<html lang="en">
+<head>
+    <link rel="stylesheet" href='style.css' type="text/css">
+    <meta charset="UTF-8">
+    <title>StatusPro by Calicocat</title>
+</head>
+<body>
+<div id="menubar" class="menubar" style="opacity:0;transition-duration:0.2s;font-size:1px">
+    <!-- We'll define these ears for ease of modification on notched devices.-->
+    <!-- iPhone X has 83px wide notches, XS max has 100px wide. We'll set the value for that in the stylesheet which should
+            center the content automatically based on width. On non-notched devices I set it to 33% to let it take up as much
+            space as needed (more than a third looks sloppy)-->
+    <div id="leftear" class="ear">
+        <!-- Inside these ears, i've defined "tap-to-show" views labled "left1 and left2". Crumbo is a currently disabled
+                feature that replicates apple's breadcrumb feature. Exobar at one point removed apples, but currently doesnt.
+                -->
+        <div @class.crumbo="exobar.breadcrumb" @class.dark="exobar.dark" id="left1"
+             style="padding-left:10px;margin-top:-5px;transition-duration:0.1s;" onClick="onLeftSideClick()">
+
+            <img id="apple" class="apple icon" src="icons/apple.png"
+                 style="margin-top:-5px;height:16px;width:16px;" alt="error">
+            <!-- Customizable Text above Music and right next to our carrier img -->
+            <span id="carrier" class="textelement iconlabel"
+                  style="top:-4px;"></span>
+        </div>
+        <div id="left2" style="margin-top:148px" onClick="onLeftSideClickTwo()">
+            <div id="weathercontainer">
+                <img id="weatherIcon" src="Simple/23.png" class="icon"
+                     style="margin-right:-5px;width:25px;height:20px;">
+                <span id="temp" class="iconlabel" style="top:-7px"></span><span id="degree"
+                                                                                                             class="iconlabel"
+                                                                                                             style="top:-7px">&deg;</span>
+            </div>
+        </div>
+    </div>
+    <div id="rightear" class="ear">
+        <div id="lvl1" style="transition-duration:0.1s" onClick="onRightSideClick()">
+            <div id="battery-wrapper" @class.hidden="exobar.theme.exobar.theme.oldtime" class="battery-wrapper">
+                <div id="clock" class="textelement"></div>
+                <div id="LevelDisplay" class="textelement" style="">100%</div>
+            </div>
+            <div id="battery-wrapper-old" @class.nothidden="exobar.theme.exobar.theme.oldtime"
+                 class="battery-wrapper hidden" style="margin-bottom:50px;margin-top:-12px;">
+                <span id="clock-old" class="textelement"></span>
+                <span id="LevelDisplay-old" class="textelement" style="">100%</span>
+            </div>
+
+        </div>
+        <div id="lvl2" style="margin-top:180px;padding-right:5px;" @class.bugged="exobar.theme.exobar.theme.oldtime"
+             onClick="onRightSideClickTwo()">
+            <table id="statusinfo">
+                <tr>
+                    <td><img id="wifi" class="icon"
+                             src="icons/signal0.png"
+                             style="margin-top:-2px;height:17.7px;width:25px;margin-right:-5px" alt="error"></td>
+                    <td><img id="cellbars" src="icons/cell0.png"
+                             style="height:24px;width:20px;margin-top:-5px;margin-right:-5px" class="icon" alt="error"></td>
+                    <td>
+                        <div id="batteryicon" class="battery"
+                             style="position:absolute;margin-left:7px;margin-top:-4px;"></div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div id="musicbar" style="display:none;position:absolute;top:30px;">
+        <!-- This bar is also great for sending debug strings to! -->
+        <span id="songinfo" class="placeholderclass" onClick=""><a id="songtitle"></a><a id="artisttag"></a></span>
+    </div>
+
+</div>
+</body>
+<script charset="utf-8">
+
+
+    // debug; document.getElementById("songinfo").innerHTML = window.innerWidth;
+
+    window.exo.log("loading");
+    window.onerror = function (message, source, lineno, colno, error) {
+        window.exo.log("JS: ERROR:" + message + " @" + source + ":" + lineno + "x" + colno + "-" + error);
+    };
+
+
+    // any of these are for debugging purposes since window.onerror is broken and I have to guess where mistakes are made.
+    window.exo.log("a");
+
+    // We're going to use webkit's on-device storage to store variables since exo is kinda broken
+    // This is how I load variables and why preferences are somewhat possible right now
+    // I'm currently working on a tiny tweak just for injecting preferences into my theme.
+    var spStorage = window.localStorage;
+
+    // Define some globals for us to use in a bit
+    var showDay = true;
+    var betaTime = false;
+    var betterXenInfo = window.exo;
+    var startIter = 0;
+    var fontSize = 10;
+    var modern = false;
+    var hr24 = true;
+    var betterCC = false;
+    var isCC = false;
+
+
+    // Exobar's device type indicator doesnt load properly, and nowhere close to fast enough for us to set up the status bar
+    // within 12 seconds, so we have to get the device type manually.
+
+    // Here, we get the pixel ratio to properly calculate the actual size of the screen
+    // iP X is like 1136 real pixels wide, but we work in a third of that. so moving something 1 px is like moving it 3 real pixels on the phone
+    var ratio = window.devicePixelRatio || 1;
+
+    // Define the users device screen dimensions
+    var screen = {
+        width: window.screen.width * ratio,
+        height: window.screen.height * ratio
+    };
+
+    // Lets give ourselves a variable. I cant remember why i put this in but it was an issue
+    var device = "unknown";
+
+    // Most devices have different widths, so we can guess them with this.
+    var devices = {
+        640 : "SE",
+        750 : "notplus",
+        828 : "xr",
+        1125: "x",
+        1242: "big"
+    };
+    device = devices[screen.width];
+    // XS Max and 6+ - 8+ have the same width, but different heights, so we have to figure it out via height.
+    if (device==="big") {
+        if (screen.height === 2688) {
+            addClass("menubar", "xsm");
+            modern = true;
+            addClass("menubar", "modern");
+        } else {
+            addClass("menubar", "plus");
+        }
+    } else {
+        // Set modern as true if its a notched device.
+        if (screen.width >= 827) {
+            modern = true;
+            addClass("menubar", "modern");
+        }
+        addClass("menubar", device);
+    }
+
+    // Here's where it gets REALLY FUN :DDDD
+    // window.clientwidth returns 980 in the regular view, but 978 in the cc view. Why? fuck if i know anymore
+    // So we can use that 2 px diff. to detirmine that we're in CC, on iphone X anyways. I'll figure out XS/R in a bit.
+
+    if (modern && window.innerWidth === 978) {
+        addClass("menubar", "cc");
+        isCC = true;
+    }
+
+    // If its not a modern device, we need to forcefully enable the "beta" viewmodel on the right as it was
+    // built for being displayed on only a 40 px line, whereas the new one accounts for extra space and uses it.
+    if (!modern) {
+        // This is probably terrible practice; these two override the default ones.
+        // TODO: clean up .superhidden stuff
+        addClass("battery-wrapper", "superhidden");
+        addClass("battery-wrapper-old", "supernothidden");
+    }
+
+    // Check if default values in webkit's storage system are set. If not, set them. I think this is bugging out in apps.
+    if (spStorage && (!('carrier' in spStorage) || spStorage.carrier === "")) {
+        // Set defaults
+
+        spStorage.carrier = 'cat';
+        spStorage.icon = 'icons/apple.png';
+        spStorage.oldtime = "false";
+        spStorage.batlvl = "50";
+        spStorage.font = "10";
+        spStorage.carrierfont = "11";
+        spStorage.black = "false";
+        spStorage.hr24 = "true";
+        spStorage.showday = "true";
+        spStorage.betcc = "false";
+        spStorage.temp = "-1";
+        spStorage.cell = "0";
+        spStorage.cell = "0";
+        spStorage.conditioncode = "2";
+        spStorage.weatherclick = "false";
+        spStorage.songtitle = "";
+        spStorage.songartist = "";
+    }
+
+    window.exo.log("a");
+
+
+    if (spStorage && 'temp' in spStorage) {
+        document.getElementById("temp").innerHTML = spStorage.temp;
+    }
+    betterXenInfo.bind('update.weather.temperature.current', function (value) {
+        spStorage && (spStorage.temp = value);
+        document.getElementById("temp").innerHTML = value;
+    });
+    if (spStorage && 'conditioncode' in spStorage) {
+        document.getElementById("weatherIcon").src = "Simple/" + spStorage.conditioncode + ".png";
+    }
+    betterXenInfo.bind('update.weather.conditionCode', function (value) {
+        spStorage && (spStorage.conditioncode = value);
+        document.getElementById("weatherIcon").src = "Simple/" + value + ".png";
+    });
+
+    if (spStorage && 'cell' in spStorage) {
+        document.getElementById("cellbars").src = "icons/cell" + spStorage.cell + ".png";
+    }
+    betterXenInfo.bind('update.mobile.strength.current', function (value) {
+        spStorage && (spStorage.cell = value);
+        document.getElementById("cellbars").src = "icons/cell" + value + ".png";
+    });
+    if (spStorage && 'wifi' in spStorage) {
+        document.getElementById("wifi").src = "icons/signal" + spStorage.wifi + ".png";
+    }
+    betterXenInfo.bind('update.wifi.strength.current', function (value) {
+        spStorage && (spStorage.wifi = value);
+        document.getElementById("wifi").src = "icons/signal" + value + ".png";
+    });
+
+    // check if there is a value stored already. There always be, since defaults in stuff, but its good practice to make
+    // sure, and im too lazy/scared to remove this and see what happens.
+    if (spStorage && 'carrier' in spStorage) {
+        document.getElementById("carrier").innerHTML = spStorage.carrier;
+    }
+
+    // This was a massive hack that I dont fully understand.
+
+    // Essentially, I can only get exobar to load its integrated settings in specific conditions. It has to be
+    //      The theme 'default', and if I fuck with exobars method of variable substitution. Theme settings are loaded
+    //      into the function that sends them to my javascript with the value "TS<themeName>", where TS<themename> is substituted
+    //      for "exobar.theme". So if, in info.plist, I stick an extra "TSdefault" in, it will for some odd reason load it
+    //      with a 90% chance of being loaded vs a 7% chance as earlier. This also means that, when exobar passes me the variables,
+    //      the duplicate 'TSdefault' values will be substituted with "exobar.theme.exobar.theme"
+
+    // When/if exobar gets an update, it will completely break this most likely, but holy shit it needs fixed.
+    betterXenInfo.bind('update.exobar.theme.exobar.theme.carrier', function (value) {
+        spStorage && (spStorage.carrier = value);
+        document.getElementById("carrier").innerHTML = value;
+    });
+
+    // Trying to fix the cc view which apparently is different with betterccxi. I need to redownload that tweak to fully
+    // figure this out.
+
+    // 24 hour mode.
+    if (spStorage && 'hr24' in spStorage) {
+        hr24 = spStorage.hr24;
+    }
+    betterXenInfo.bind('update.exobar.theme.exobar.theme.twentytime', function (value) {
+        spStorage && (spStorage.hr24 = value);
+        hr24 = value;
+    });
+
+    // Music click activates weather view (for hotspot users like me)
+    if (spStorage && 'weatherclick' in spStorage) {
+        if (!spStorage.weatherclick=="true") {
+            document.getElementById("musicbar").onclick = function() {};
+
+        } else {
+        document.getElementById("musicbar").onclick = function() {
+            if(document.getElementById("left1").style.marginTop === "-180px") {
+                // onLeftSideClickTwo();
+            } else {
+                // onLeftSideClick();
+            }
+        };}
+    }
+    betterXenInfo.bind('update.exobar.theme.exobar.theme.musicweather', function (value) {
+        spStorage && (spStorage.weatherclick = value);
+        if (!value=="true") {
+            document.getElementById("musicbar").onclick = function() {};
+        } else {
+        document.getElementById("musicbar").onclick = function() {
+            if(document.getElementById("left1").style.marginTop === "-180px") {
+                // onLeftSideClickTwo();
+            } else {
+                // onLeftSideClick();
+            }
+        };}
+    });
+
+    // The url for the icon.
+    if (spStorage && 'icon' in spStorage) {
+        document.getElementById("apple").src = spStorage.icon;
+    }
+    betterXenInfo.bind('update.exobar.theme.exobar.theme.icon', function (value) {
+        spStorage && (spStorage.icon = value);
+        document.getElementById("apple").src = value;
+    });
+
+    if (spStorage && 'songtitle' in spStorage) {
+        if (spStorage.songtitle.includes("•")) {
+            // Spotify + exo = everything broken. I only use spotify. Trying to figure it out.
+            document.getElementById("artisttag").style.display = "none";
+        } else {
+            document.getElementById("artisttag").style.display = "initial";
+        }
+        if (spStorage.songtitle==="") {
+            addClass("songinfo", "hidden");
+        } else {
+            document.getElementById("songinfo").classList.remove("hidden");
+        }
+
+        document.getElementById("songname").innerHTML = spStorage.songtitle;
+    }
+    betterXenInfo.bind('update.media.title', function (value) {
+        spStorage && (spStorage.icon = value);
+        if (value.includes("•")) {
+            // Spotify + exo = everything broken. I only use spotify. Trying to figure it out.
+            document.getElementById("artisttag").style.display = "none";
+        } else {
+            document.getElementById("artisttag").style.display = "initial";
+        }
+
+        if (value==="") {
+            addClass("songinfo", "hidden");
+        } else {
+            document.getElementById("songinfo").classList.remove("hidden");
+        }
+
+        document.getElementById("songname").innerHTML = value;
+
+    });
+    if (spStorage && 'songartist' in spStorage) {
+        document.getElementById("artisttag").innerHTML = spStorage.songartist;
+    }
+    betterXenInfo.bind('update.media.artist', function (value) {
+        spStorage && (spStorage.songartist = value);
+        document.getElementById("artisttag").innerHTML = value;
+    });
+
+    window.exo.log("a");
+    // beta time
+    if (spStorage && 'oldtime' in spStorage) {
+        if (spStorage.oldtime==="true") {
+            betaTime = true;
+        }
+    }
+
+    // yeah still beta time
+    window.exo.log("a");
+    betterXenInfo.bind('update.exobar.theme.exobar.theme.oldtime', function (value) {
+        spStorage && (spStorage.oldtime = value);
+        if (!modern) {
+            betaTime=true;
+            return;
+        }
+        if (!value) {
+            betaTime=false;
+            return;
+        }
+        betaTime = true;
+    });
+
+    // i wonder what this does
+    if (spStorage && 'showday' in spStorage) {
+        showDay = spStorage.showday;
+    }
+    betterXenInfo.bind('update.exobar.theme.exobar.theme.showday', function (value) {
+        spStorage && (spStorage.showday = value);
+        showDay = value;
+    });
+
+    // I have to get old battery levels via storing the last one and loading it in
+    // Thanks nep >:(
+    if (spStorage && 'batlvl' in spStorage) {
+        // Update battery icon view too
+        setBat(spStorage.batlvl);
+        // We make sure both of these are updated so depending on the view it works.
+        document.getElementById("LevelDisplay").innerHTML = spStorage.batlvl + "%";
+        document.getElementById("LevelDisplay-old").innerHTML = spStorage.batlvl + "%";
+    }
+    window.exo.log("a");
+
+    // This stops calling after a bit :p
+    // Not really sure what to do, since safari doesnt support battery api.
+    betterXenInfo.bind('update.battery.percentage', function (value) {
+        spStorage && (spStorage.batlvl=value);
+        window.exo.log("bat loading" + value);
+        if ((value === "" || value.toString() === "undefined")) {
+            return;
+        }
+        setBat(value);
+        document.getElementById("LevelDisplay").innerHTML = value + "%";
+        document.getElementById("LevelDisplay-old").innerHTML = value + "%";
+    });
+
+
+    // This wont load most of the time.
+    window.exo.log("a");
+    betterXenInfo.bind('update.exobar.cc', function (value) {
+        window.exo.log("cc loading" + value);
+        // no idea what this does or why. I think its something to do with betterccxi and me needing to fix up the cc
+        // view in general
+        if (!value) {
+            return;
+        }
+        // but when it is loaded, make sure cc is modified properly
+        addClass("menubar", "cc");
+    });
+
+    // Dark mode. For what its worth this usually loads
+    betterXenInfo.bind('update.exobar.dark', function (value) {
+        window.exo.log("dark loading" + value);
+        if (value) {
+            addClass("menubar", "dark");
+        }
+    });
+    betterXenInfo.bind('update.battery.charging', function (value) {
+        window.exo.log("chrg loading" + value);
+        if (value) {
+            addClass("menubar", "charging");
+        } else {
+            if (document.getElementById("menubar").className.includes("charging")) {
+                document.getElementById("menubar").classList.remove("charging");
+            }
+        }
+    });
+    window.exo.log("a");
+
+    // This never gets loaded properly in exobar 80% of the time so localStorage is a *must*
+    if (spStorage && 'font' in spStorage) {
+        fontSize = spStorage.font;
+        document.getElementById("menubar").style.fontSize = fontSize + "px";
+    }
+
+    // When it does work, make sure we grab that value and never let go.
+    betterXenInfo.bind('update.exobar.theme.exobar.theme.font', function (value) {
+        spStorage && (spStorage.font = value);
+        window.exo.log("font loading" + value);
+        fontSize = value;
+        document.getElementById("menubar").style.fontSize = value + "px";
+    });
+
+    window.exo.log("a");
+    // OLED black background mode
+    if (spStorage && 'black' in spStorage) {
+        if (spStorage.black === "true") {
+            addClass("menubar", "black");
+            document.getElementById("menubar").classList.remove("dark");
+        } else {
+            document.getElementById("menubar").classList.remove("black");
+        }
+    }
+    betterXenInfo.bind('update.exobar.theme.exobar.theme.black', function (value) {
+        spStorage && (spStorage.black = value);
+        if (!value) {
+            document.getElementById("menubar").classList.remove("black");
+            return;
+        }
+        addClass("menubar", "black");
+        document.getElementById("menubar").classList.remove("dark");
+    });
+    window.exo.log("a");
+
+
+    // same as regular font but specifically for the carrier.
+    if (spStorage && 'carrierfont' in spStorage) {
+        document.getElementById("carrier").style.fontSize = spStorage.carrierfont + "px";
+        document.getElementById("carrier").style.marginTop = (20 - spStorage.carrierfont).toString() + "px";
+    }
+    betterXenInfo.bind('update.exobar.theme.exobar.theme.carrierfont', function (value) {
+        window.exo.log("carfont loading" + value);
+        spStorage && (spStorage.carrierfont = value);
+        document.getElementById("carrier").style.fontSize = value + "px";
+        document.getElementById("carrier").style.marginTop = (20 - value).toString() + "px";
+    });
+
+    window.exo.log("a");
+    /*
+
+    TODO: Implement this.
+
+    betterXenInfo.bind('update.exobar.theme.exobar.theme.darktextcolor', function (value) {
+        addRule("#menubar.dark {color:" + value + "}");
+        addRule("#menubar.black {color:" + value + "!important}");
+    });
+    betterXenInfo.bind('update.exobar.theme.exobar.theme.lighttextcolor', function (value) {
+        addRule("#menubar:not(.dark) {color:" + value + "!important}");
+    });
+
+    function addRule(rule) {
+        var sheet = window.document.styleSheets[0];
+        sheet.insertRule(rule, sheet.cssRules.length);
+    }
+    */
+    window.exo.log("a");
+
+    // We can hijack this and use it as a tick function
+    betterXenInfo.bind('update.time.withSeconds', function (value) {
+        var e = new Event('touchstart');
+        document.getElementById("menubar").dispatchEvent(e);
+        window.exo.log("tick" + value);
+        if (hr24) {
+            document.getElementById("clock").innerHTML = myDate() + " " + checkTime(new Date().getHours()) + ":" + checkTime(new Date().getMinutes());
+            document.getElementById("clock-old").innerHTML = "  " + myDate() + " " + checkTime(new Date().getHours()) + ":" + checkTime(new Date().getMinutes()) + " - ";
+        } else {
+            document.getElementById("clock").innerHTML = myDate() + " " + formatAMPM(new Date());
+            document.getElementById("clock-old").innerHTML = "  " + myDate() + " " + formatAMPM(new Date());
+        }
+        if (startIter === 3) {
+            // I have no fuckin idea why I wait 3 seconds to enable user interaction but I'm too afraid to change this.
+            betterXenInfo.action('enableInteraction');
+        } else {
+            startIter += 1;
+        }
+
+        // Let the menubar be visible after the bar has had a second to load in
+        document.getElementById("menubar").style.opacity = "1";
+    });
+
+    // thanks stackoverflow
+    function formatAMPM(date) {
+        var hours = date.getHours();
+        var minutes = date.getMinutes();
+        var ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+        minutes = minutes < 10 ? '0'+minutes : minutes;
+        return hours + ':' + minutes + ' ' + ampm;
+    }
+
+    // betterXenInfo.bind('update.exobar.theme.exobar.theme.exobar.theme.exobar.theme.')
+
+    window.exo.log("a");
+    // Get the device pixel ratio
+
+    // Change the width of the batteryicon element. Width = how far the bar is in the thing
+    function setBat(lvl) {
+        // 100% is 12 px wide, so for example, if the battery is at 100%, 100 / 100 = 1, and 12 * 1 = 12px, so the bar extends the full width.
+        // See, you *will* use basic algebra in the real world!
+        document.getElementById("batteryicon").style.width = (12 * (lvl / 100)).toString() + "px";
+    }
+
+    // Add a class to an element.
+    function addClass(id, className) {
+        var e = document.getElementById(id);
+        e.className += " " + className;
+    }
+
+
+    // Thanks again stackoverflow. Get the day of the week.
+    function myDate() {
+        // lol im lazy, but yeah, this is where we run the check for showDay
+        if (!showDay) {
+            return "";
+        }
+        var a = new Date();
+        var weekdays = new Array(7);
+        weekdays[0] = "Sun";
+        weekdays[1] = "Mon";
+        weekdays[2] = "Tue";
+        weekdays[3] = "Wed";
+        weekdays[4] = "Thu";
+        weekdays[5] = "Fri";
+        weekdays[6] = "Sat";
+        return weekdays[a.getDay()];
+    }
+
+    // Add 0s to the time for 24hr time. Otherwise you get weird ass times like "1:5" at "01:05"
+    function checkTime(i) {
+        if (i < 10) {
+            i = "0" + i;
+        }
+        return i;
+    }
+
+    // Move things up and down. Variables are different and its been reduced to an ifelse chain while i figure it out.
+    function onLeftSideClick() {
+        document.getElementById("left1").style.marginTop = "-180px";
+        if (isCC) {
+            document.getElementById("left2").style.marginTop = "166px";
+        } else if (!modern) {
+            document.getElementById("left2").style.marginTop = "171px";
+        } else if (betaTime) {
+            document.getElementById("left2").style.marginTop = "166px";
+        } else {
+            document.getElementById("left2").style.marginTop = "166px";
+        }
+    }
+
+    function onLeftSideClickTwo() {
+        document.getElementById("left1").style.marginTop = "-5px";
+
+        document.getElementById("left2").style.marginTop = "180px";
+    }
+
+    // Same thing as above.
+    function onRightSideClick() {
+
+        document.getElementById("lvl1").style.marginTop = "-180px";
+
+        if (isCC) {
+            document.getElementById("lvl2").style.marginTop = "158px";
+        } else if (!modern) {
+            document.getElementById("lvl2").style.marginTop = "163px";
+        } else {
+            document.getElementById("lvl2").style.marginTop = "158px";
+        }
+    }
+
+    function onRightSideClickTwo() {
+        if (modern) {
+            document.getElementById("lvl1").style.marginTop = "14px";
+        } else {
+            document.getElementById("lvl1").style.marginTop = "10px";
+        }
+        document.getElementById("lvl2").style.marginTop = "180px";
+    }
+
+
+</script>
+</html>

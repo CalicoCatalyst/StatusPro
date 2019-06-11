@@ -1,0 +1,235 @@
+* {
+	-webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+body {
+	font-family: '-apple-system-font', 'Helvectica Neue', serif;
+}
+#menubar {
+	height:40px;
+	width:100%;
+}
+#menubar.cc {
+	color:white;
+	border-radius:10px;
+	height:44px;
+	margin-top:0px;
+	padding-top:0;
+}
+#menubar.cc::before {
+	display:block;
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	content:"";
+	border-radius:10px;
+	background-color:rgba(0,0,0,.50);
+}
+#menubar.cc .ear > div {
+	top:25px;
+}
+#menubar.black {
+	color:white!important;
+}
+#menubar.black::before {
+	display:block;
+	position:absolute;
+	top:-100px;
+	left:-100px;
+	width:500vw;
+	height:500vw;
+	content:"";
+	background:#000;
+}
+#menubar.black img {
+	filter: invert(0%)!important;
+}
+#menubar.black .battery {
+	background:white!important;
+}
+#menubar.black .battery:before {
+	border-color: #fff!important;
+}
+
+#menubar.black .battery:after {
+	border-color: #fff!important;
+}
+#menubar.modern {
+	height:44px;
+}
+#menubar:not(.dark) {
+	color:white;
+}
+#menubar.dark {
+	color:black;
+}
+#menubar.dark .icon {
+	filter: invert(100%);
+}
+#menubar.SE {
+	width:640px;
+	height:40px;
+}
+#menubar.notplus #statusinfo {
+	margin-left:-20px;
+}
+#menubar.plus #statusinfo {
+	 margin-left:20px;
+ }
+#menubar:not(.modern) #leftear, #menubar:not(.modern) #weathercontainer {
+	margin-top: -6px;
+}
+.bugged {
+	padding-top:20px;
+}
+.bugged #batteryicon {
+	margin-top:5px!important;
+}
+#musicbar {
+	width: 100%;
+	height: 10px;
+	text-align:center;
+	position: absolute;
+	top: 30px;
+	left: 0;
+}
+#menubar .ear {
+	height:44px;
+	position:absolute;
+	text-align: center;
+	vertical-align: middle;
+	align-content: center;
+}
+#menubar:not(.modern) #leftear {
+	text-align: left;
+}
+
+#menubar:not(.modern) #rightear {
+	text-align: right;
+}
+#menubar.notplus #rightear {
+	margin-top:-3px;
+}
+#menubar.plus #rightear {
+	margin-top:-3px;
+}
+#menubar.SE #rightear {
+	margin-top:-1px;
+}
+#menubar:not(.modern) #rightear #lvl2{
+	right:-20px;
+}
+#menubar.notplus #rightear #lvl2 {
+	right:-25px!important;
+}
+#menubar.SE .ear {
+	height:40px;
+	width:30%;
+	font-size:10px;
+}
+#menubar.plus .ear {
+	height:40px;
+	width:30%;
+}
+.hidden {
+	display: none;
+	visibility: hidden;
+}
+.nothidden {
+	display:block!important;
+	visibility:visible!important;
+}
+body #menubar .superhidden {
+	display:none!important;
+	visibility:hidden!important;
+}
+body #menubar .supernothidden {
+	display:block!important;
+	visibility:visible!important;
+}
+#menubar.modern #rightear #lvl1 {
+	margin-top:14px;
+	padding-right:20px;
+}
+#menubar:not(.modern) #rightear #lvl1 {
+	margin-top:10px;
+	padding-right:5px;
+}
+#menubar.x .ear{
+    width: 83px!important;
+}
+#menubar.xsm .ear {
+    width: 102px;
+}
+#menubar .ear div {
+	position: relative;
+	top: 50%;
+	transform: translateY(-50%); 
+}
+#menubar #leftear {
+	left:0;
+	top:0;
+}
+#menubar #rightear {
+	right:0;
+	top:0;
+}
+#menubar.dark .battery {
+	background:black;
+}
+#menubar.dark .battery:before {
+	border-color: #000;
+}
+
+#menubar.dark .battery:after {
+	border-color: #000;
+}
+#menubar.charging .battery {
+	background: #8acc9b!important;
+}
+.battery {
+	position: relative;
+	display: block;
+	background: white;
+	border-radius:1px;
+	width: 12px;
+	height: 5.2px;
+}
+
+
+.battery:before {
+	content: "";
+	display: block;
+	background: transparent;
+	border: 0.7px solid #ffffff;
+	width: 14px;
+	height: 7px;
+	position: absolute;
+	border-radius: 2px;
+	margin-left:-1.7px;
+	margin-top:-1.5px;
+	border-top-width:0.7px;
+	border-bottom-width:0.5px;
+}
+
+.battery:after {
+	content: "";
+	display: block;
+	background: transparent;
+	border: 0.7px solid #ffffff;
+	margin: 1.3px 13px;
+	width: 0px;
+	height: 1px;
+	position: absolute;
+	border-radius: 2px;
+}
+.icon {
+	width: 16px;
+	height: 16px
+}
+.iconlabel {
+	display:inline-block;
+	position:relative;
+	top:-5px
+}

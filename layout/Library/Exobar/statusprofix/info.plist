@@ -1,0 +1,5 @@
+{
+	author = cat;
+	version = "6.6.6";
+	description = "This is a placeholder to prevent safemoding on upgrade from beta versions. SELECT THE DEFAULT THEME";
+}
